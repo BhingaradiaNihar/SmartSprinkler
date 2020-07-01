@@ -18,8 +18,9 @@ int zone5 = D4;
 int zone6 = D5;
 int zone7 = D6;
 int zone8 = D7;
-int button1= A6;
-int button2= A4;
+int button1= A6; // red
+int button2= A4; // green
+int button3 =A7; // yellow
 
 struct DateTime{
     String _date, _time, _day;
@@ -34,7 +35,6 @@ bool lock = false;
 // data code  [1-8] for perticular sprinklars 
 // 9 turn on all one by one
 // 10 turn off all sprinklers Forced Stop
-bool mobile_data[9] = {false}; 
 bool forced_stop = false;
 int zone_time[9]= {-1,1,1,1,1,1,1,1,1};  // ignore index 0 // in minutes // zones are from 1-8 
 int day_to_water = 0;
@@ -50,7 +50,7 @@ int time_to_water = 4; // in 24 hours specify hour
  String get_day(int num);
  void increment_day_to_water();
  void display_skip_day();
- void display_watering_zone(int number);
+ void display_and_water_zone(int number);
  void display_mode_0();
  void display_mode_1();
  void display_mode_2();
@@ -102,49 +102,49 @@ void turn_on_zone(int zone){
         switch(zone){
             case 1:
                 digitalWrite(zone1, LOW);
-                display_watering_zone(1, minute_to_milis(zone_time[1]));                // FIX THIS
+                display_and_water_zone(1, minute_to_milis(zone_time[1]));                // FIX THIS
                 //delay(minute_to_milis(zone_time[1]));
                 digitalWrite(zone1, HIGH);
                 break;
             case 2:
                 digitalWrite(zone2, LOW);
-                display_watering_zone(2, minute_to_milis(zone_time[2]));
+                display_and_water_zone(2, minute_to_milis(zone_time[2]));
                 //delay(minute_to_milis(zone_time[2]));
                 digitalWrite(zone2, HIGH);
                 break;
             case 3:
                 digitalWrite(zone3, LOW);
-                display_watering_zone(3, minute_to_milis(zone_time[3]));
+                display_and_water_zone(3, minute_to_milis(zone_time[3]));
                 //delay(minute_to_milis(zone_time[3]));
                 digitalWrite(zone3, HIGH);
                 break;
             case 4:
                 digitalWrite(zone4, LOW);
-                display_watering_zone(4, minute_to_milis(zone_time[4]));
+                display_and_water_zone(4, minute_to_milis(zone_time[4]));
                 //delay(minute_to_milis(zone_time[4]));
                 digitalWrite(zone4, HIGH);
                 break;
             case 5:
                 digitalWrite(zone5, LOW);
-                display_watering_zone(5, minute_to_milis(zone_time[5]));
+                display_and_water_zone(5, minute_to_milis(zone_time[5]));
                 //delay(minute_to_milis(zone_time[5]));
                 digitalWrite(zone5, HIGH);
                 break;
             case 6:
                 digitalWrite(zone6, LOW);
-                display_watering_zone(6, minute_to_milis(zone_time[6]));
+                display_and_water_zone(6, minute_to_milis(zone_time[6]));
                 //delay(minute_to_milis(zone_time[6]));
                 digitalWrite(zone6, HIGH);
                 break;
             case 7:
                 digitalWrite(zone7, LOW);
-                display_watering_zone(7, minute_to_milis(zone_time[7]));
+                display_and_water_zone(7, minute_to_milis(zone_time[7]));
                 //delay(minute_to_milis(zone_time[7]));
                 digitalWrite(zone7, HIGH);
                 break;
             case 8:
                 digitalWrite(zone8, LOW);
-                display_watering_zone(8, minute_to_milis(zone_time[8]));
+                display_and_water_zone(8, minute_to_milis(zone_time[8]));
                 //delay(minute_to_milis(zone_time[8]));
                 digitalWrite(zone8, HIGH);
                 break; 
@@ -172,39 +172,30 @@ void mobile_handle(const char* event, const char* data) {
      lock = true;                  // serve only one request at a time 
     switch (recieve_data){
         case 1: 
-            mobile_data[1] = true;
             turn_on_zone(1);
             break;
         case 2: 
-            mobile_data[2] = true;
             turn_on_zone(2);
             break;
         case 3: 
-            mobile_data[3] = true;
             turn_on_zone(3);
             break;
         case 4: 
-            mobile_data[4] = true;
             turn_on_zone(4);
             break;
         case 5: 
-            mobile_data[5] = true;
             turn_on_zone(5);
             break;
         case 6:
-            mobile_data[6] = true;
             turn_on_zone(6);
             break;
         case 7: 
-            mobile_data[7] = true;
             turn_on_zone(7);
             break;
         case 8: 
-            mobile_data[8] = true;
             turn_on_zone(8);
             break;
         case 9:                           // turn on all sprinkler one by one
-            mobile_data[9] = true;
             for (int i = 1 ; i <= 8 ; i++){
               if(digitalRead(button1) == LOW || forced_stop){ // Forced Stop
                 forced_stop = true;  // Forced stop variable
@@ -345,7 +336,7 @@ DateTime get_DateTime(time_t mytime){
     return data;
 }       
 
- void display_watering_zone(int number, int time){  // FIX THIS
+ void display_and_water_zone(int number, int time){  // FIX THIS
     int sec = time / 1000;
     while (sec){
     display.clearDisplay(); 
