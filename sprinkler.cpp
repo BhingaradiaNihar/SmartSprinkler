@@ -41,6 +41,8 @@ int day_to_water = 0;
 int Mode = 0; 
 int stopper1 = 0; 
 int stopper2 = 0;
+int stopper3 = 0; 
+int mode_1_zone = 0;
 const int TOTAL_MODE = 5;
 int time_to_water = 4; // in 24 hours specify hour
 
@@ -51,12 +53,14 @@ int time_to_water = 4; // in 24 hours specify hour
  void increment_day_to_water();
  void display_skip_day();
  void display_and_water_zone(int number);
- void display_mode_0();
- void display_mode_1();
- void display_mode_2();
- void display_mode_3();
+ void mode_0();
+ void mode_1();
+ void mode_2();
+ void mode_3();
+ void mode_4();
  void display_forced_stop();
  int minute_to_milis(int minute);
+ void reset_mode_1_zones() {mode_1_zone = 0;}
  DateTime get_DateTime(time_t mytime);
 
 
@@ -70,7 +74,8 @@ void setup() {
     pinMode (zone7, OUTPUT);
     pinMode (zone8, OUTPUT);
     pinMode(button1, INPUT_PULLUP);
-    pinMode(button2, INPUT_PULLUP );
+    pinMode(button2, INPUT_PULLUP);
+    pinMode(button2, INPUT_PULLUP);
     digitalWrite(zone1, HIGH);
     digitalWrite(zone2, HIGH);
     digitalWrite(zone3, HIGH);
@@ -258,15 +263,15 @@ void loop() {
     }
     
     if (Mode == 0) 
-        display_mode_0();
+        mode_0();
     else if(Mode == 1)
-        display_mode_1();
+        mode_2();
     else if(Mode == 2)
-        display_mode_2();
+        mode_3();
     else if (Mode == 3)
-        display_mode_3();
+        mode_4();
     else
-        display_mode_4();
+        mode_5();
     
 
     if (btnPress1 == HIGH) stopper1 = 0;
@@ -416,7 +421,7 @@ String get_day_string(int num){
     delay(2000);
  }
  
- void display_mode_0(){
+ void mode_0(){
     DateTime curr = get_DateTime(Time.now());
     display.clearDisplay(); 
     display.setTextSize(1);
@@ -429,7 +434,7 @@ String get_day_string(int num){
     display.println();
     display.display();
 }
- void display_mode_1(){
+ void mode_2(){
     if(prev.raw){
         display.clearDisplay(); 
         display.setTextColor(BLACK);
@@ -453,7 +458,7 @@ String get_day_string(int num){
     }
 }
   
-void display_mode_2(){
+void mode_3(){
     display.clearDisplay(); 
     display.setTextColor(BLACK);
     display.setCursor(0,0);
@@ -471,8 +476,75 @@ void display_mode_2(){
     
     display.display();
 }  
+
+void mode_1(){
+   
+   if(digitalRead(button3) == LOW && stopper3 == 0){
+        mode_1_zone = ++mode_1_zone % 9;
+    }
+
+    display.clearDisplay(); 
+    display.setTextColor(BLACK);
+    display.setCursor(0,0);
+    display.setTextSize(1);
+    display.println("    Zone ");
+    display.setTextSize(2);
+    if (mode_1_zone != 0 )
+        display.println("   " + String(number));
+    else
+        display.println("   " + "ALL";
+
+    display.setTextSize(1);
+
+
+
+
+    if(digitalRead(button1) == LOW){
+
+
+        if(mode_1_zone == 0){
+            for (int i = 1 ; i <= 8 ; i++){
+                if(forced_stop){ // Forced Stop
+                    forced_stop = true;  // Forced stop variable
+                    display_forced_stop();
+                    forced_stop = false; // reset
+                    break;
+                }
+                turn_on_zone(i); // turns all zone one by one
+            }
+        }
+        else
+            turn_on_zones(mode_1_zone);
+
+    }
+/*
+   while (sec){
+    display.clearDisplay(); 
+    display.setTextColor(BLACK);
+    display.setCursor(0,0);
+    display.setTextSize(1);
+    display.println(" Watering Zone ");
+    display.setTextSize(2);
+    display.println("   " + String(number));
+    display.setTextSize(1);
+    display.println("Timer: " + String(sec / 60)+ ":" + String(sec % 60));
+    display.display();
+    delay(1000);
+        if(digitalRead(button1) == LOW || forced_stop){ // Forced Stop
+            forced_stop = true;  // Forced stop variable
+            display_forced_stop();
+            ///forced_stop = false; // make  skip
+            break;
+        }
+    sec--;
+    }
+*/
+
+    if(digitalRead(button3) == HIGH) stopper3 == 1;
+
+}
   
-void display_mode_3(){
+void mode_4(){
     display.clearDisplay(); 
     display.setTextColor(BLACK);
     display.setCursor(0,0);
@@ -493,7 +565,7 @@ void display_forced_stop(){
     delay(2000);
 }
 
-void display_mode_4(){
+void mode_5(){
     display.clearDisplay(); 
     display.setTextColor(BLACK);
     display.setCursor(0,0);
