@@ -34,7 +34,7 @@ bool lock = false;
 // data code  [1-8] for perticular sprinklars 
 // 9 turn on all one by one
 // 10 turn off all sprinklers Forced Stop
-bool mobile_data[10] = {false}; 
+bool mobile_data[9] = {false}; 
 bool forced_stop = false;
 int zone_time[9]= {-1,1,1,1,1,1,1,1,1};  // ignore index 0 // in minutes // zones are from 1-8 
 int day_to_water = 0;
@@ -50,7 +50,7 @@ int time_to_water = 4; // in 24 hours specify hour
  String get_day(int num);
  void increment_day_to_water();
  void display_skip_day();
- void display_and_water_zone(int number);
+ void display_watering_zone(int number);
  void display_mode_0();
  void display_mode_1();
  void display_mode_2();
@@ -102,42 +102,50 @@ void turn_on_zone(int zone){
         switch(zone){
             case 1:
                 digitalWrite(zone1, LOW);
-                display_and_water_zone(1, minute_to_milis(zone_time[1]));               
+                display_watering_zone(1, minute_to_milis(zone_time[1]));                // FIX THIS
+                //delay(minute_to_milis(zone_time[1]));
                 digitalWrite(zone1, HIGH);
                 break;
             case 2:
                 digitalWrite(zone2, LOW);
-                display_and_water_zone(2, minute_to_milis(zone_time[2]));
+                display_watering_zone(2, minute_to_milis(zone_time[2]));
+                //delay(minute_to_milis(zone_time[2]));
                 digitalWrite(zone2, HIGH);
                 break;
             case 3:
                 digitalWrite(zone3, LOW);
-                display_and_water_zone(3, minute_to_milis(zone_time[3]));
+                display_watering_zone(3, minute_to_milis(zone_time[3]));
+                //delay(minute_to_milis(zone_time[3]));
                 digitalWrite(zone3, HIGH);
                 break;
             case 4:
                 digitalWrite(zone4, LOW);
-                display_and_water_zone(4, minute_to_milis(zone_time[4]));
+                display_watering_zone(4, minute_to_milis(zone_time[4]));
+                //delay(minute_to_milis(zone_time[4]));
                 digitalWrite(zone4, HIGH);
                 break;
             case 5:
                 digitalWrite(zone5, LOW);
-                display_and_water_zone(5, minute_to_milis(zone_time[5]));
+                display_watering_zone(5, minute_to_milis(zone_time[5]));
+                //delay(minute_to_milis(zone_time[5]));
                 digitalWrite(zone5, HIGH);
                 break;
             case 6:
                 digitalWrite(zone6, LOW);
-                display_and_water_zone(6, minute_to_milis(zone_time[6]));
+                display_watering_zone(6, minute_to_milis(zone_time[6]));
+                //delay(minute_to_milis(zone_time[6]));
                 digitalWrite(zone6, HIGH);
                 break;
             case 7:
                 digitalWrite(zone7, LOW);
-                display_and_water_zone(7, minute_to_milis(zone_time[7]));
+                display_watering_zone(7, minute_to_milis(zone_time[7]));
+                //delay(minute_to_milis(zone_time[7]));
                 digitalWrite(zone7, HIGH);
                 break;
             case 8:
                 digitalWrite(zone8, LOW);
-                display_and_water_zone(8, minute_to_milis(zone_time[8]));
+                display_watering_zone(8, minute_to_milis(zone_time[8]));
+                //delay(minute_to_milis(zone_time[8]));
                 digitalWrite(zone8, HIGH);
                 break; 
             default:
@@ -152,6 +160,8 @@ void turn_on_zone(int zone){
                 break;
         }
     }
+    
+    prev = get_DateTime(Time.now()); // sets previously water date/time
     
 }
 
@@ -199,15 +209,14 @@ void mobile_handle(const char* event, const char* data) {
               if(digitalRead(button1) == LOW || forced_stop){ // Forced Stop
                 forced_stop = true;  // Forced stop variable
                 display_forced_stop();
-                forced_stop = false;
+                // reset happens in loop after sending notification
+                forced_stop = false; // reset
                 break;
                  }
                 turn_on_zone(i);
             }
-            prev = get_DateTime(Time.now());
             break;
         case 10:                           //  Forced to stop
-            mobile_data[10] = true;  // to send message back to phone 
             forced_stop = true;
             break;
         case 11:                           // If rain then skipped or user can skip it as well
@@ -232,8 +241,7 @@ void loop() {
     if(btnPress2 == LOW && stopper2 == 0){
 
         if(Mode == 1){
-            for (int i = 1 ; i <= 8; i++ ){
-                prev = get_DateTime(Time.now());
+            for (int i = 1 ; i <= 8 ; i++){
                 if(digitalRead(button1) == LOW || forced_stop){ // Forced Stop
                     forced_stop = true;  // Forced stop variable
                     display_forced_stop();
@@ -269,12 +277,7 @@ void loop() {
     else
         display_mode_4();
     
-    if(mobile_data[10] == true){
-        Particle.publish("notify_mobile", String("10"), PUBLIC);      // used for sending notification to phone 
-        mobile_data[10] = false;
-        forced_stop = false;           // reset so we can turn on sprinkler in future
-    }
-    
+
     if (btnPress1 == HIGH) stopper1 = 0;
     if (btnPress2 == HIGH) stopper2 = 0;
     delay(1000);
@@ -342,18 +345,17 @@ DateTime get_DateTime(time_t mytime){
     return data;
 }       
 
- void display_and_water_zone(int number, int time){  // time in milliseconds
+ void display_watering_zone(int number, int time){  // FIX THIS
     int sec = time / 1000;
     while (sec){
     display.clearDisplay(); 
     display.setTextColor(BLACK);
     display.setCursor(0,0);
     display.setTextSize(1);
-    display.println("Watering Zone ");
+    display.println(" Watering Zone ");
     display.setTextSize(2);
     display.println("   " + String(number));
     display.setTextSize(1);
-
     display.println("Timer: " + String(sec / 60)+ ":" + String(sec % 60));
     display.display();
     delay(1000);
@@ -366,6 +368,8 @@ DateTime get_DateTime(time_t mytime){
     sec--;
     }
 }
+  
+  
   
 void set_day_to_water(){
     curr = get_DateTime(Time.now());
@@ -517,16 +521,3 @@ void display_mode_4(){
 int minute_to_milis(int minute){             // minute to second conversion
     return (minute * 60 *1000);
 }
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-   
