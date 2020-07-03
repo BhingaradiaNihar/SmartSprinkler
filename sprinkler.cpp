@@ -43,12 +43,13 @@ int stopper1 = 0;
 int stopper2 = 0;
 int stopper3 = 0; 
 int mode_1_zone = 0;
-const int TOTAL_MODE = 5;
+const int TOTAL_MODE = 6;
 int time_to_water = 4; // in 24 hours specify hour
 
 
 /* function declaratin */
  void set_day_to_water();
+ void turn_on_zone(int zone);
  String get_day(int num);
  void increment_day_to_water();
  void display_skip_day();
@@ -236,7 +237,7 @@ void loop() {
     int btnPress2 = digitalRead(button2);
     if(btnPress2 == LOW && stopper2 == 0){
 
-        if(Mode == 1){
+        if(Mode == 2){
             for (int i = 1 ; i <= 8 ; i++){
                 if(digitalRead(button1) == LOW || forced_stop){ // Forced Stop
                     forced_stop = true;  // Forced stop variable
@@ -247,16 +248,16 @@ void loop() {
                 turn_on_zone(i); // turns all zone one by one
             }
         }
-        else if(Mode == 2){
+        else if(Mode == 3){
             increment_day_to_water(); // skip a day
             display_skip_day();
         }
-        else if(Mode == 3){
+        else if(Mode == 4){
              for (int i = 1 ; i <= 8 ; i++)
                 if(++zone_time[i] > 15)
                     zone_time[i] = 1;
         }
-        else if(Mode == 4)
+        else if(Mode == 5)
             time_to_water++;
             
         stopper2 = 1;
@@ -265,10 +266,12 @@ void loop() {
     if (Mode == 0) 
         mode_0();
     else if(Mode == 1)
-        mode_2();
+        mode_1();
     else if(Mode == 2)
-        mode_3();
+        mode_2();
     else if (Mode == 3)
+        mode_3();
+    else if(Mode  == 4)
         mode_4();
     else
         mode_5();
@@ -276,7 +279,7 @@ void loop() {
 
     if (btnPress1 == HIGH) stopper1 = 0;
     if (btnPress2 == HIGH) stopper2 = 0;
-    delay(1000);
+    delay(200);
 }
 
 DateTime get_DateTime(time_t mytime){
@@ -478,28 +481,33 @@ void mode_3(){
 }  
 
 void mode_1(){
+
+    btnPress3 = digitalRead(button3);
    
-   if(digitalRead(button3) == LOW && stopper3 == 0){
+   if(btnPress3 == LOW && stopper3 == 0){
         mode_1_zone = ++mode_1_zone % 9;
+        stopper3 = 1;
     }
 
     display.clearDisplay(); 
     display.setTextColor(BLACK);
     display.setCursor(0,0);
     display.setTextSize(1);
-    display.println("    Zone ");
+    display.println("     Zone");
+    display.println("");
     display.setTextSize(2);
     if (mode_1_zone != 0 )
-        display.println("   " + String(number));
+        display.println("   " + String(mode_1_zone));
     else
-        display.println("   " + "ALL";
+        display.println("    ALL");
 
     display.setTextSize(1);
+    display.display();
 
 
 
 
-    if(digitalRead(button1) == LOW){
+    if(digitalRead(button2) == LOW){
 
 
         if(mode_1_zone == 0){
@@ -514,7 +522,7 @@ void mode_1(){
             }
         }
         else
-            turn_on_zones(mode_1_zone);
+            turn_on_zone(mode_1_zone);
 
     }
 /*
@@ -540,7 +548,7 @@ void mode_1(){
     }
 */
 
-    if(digitalRead(button3) == HIGH) stopper3 == 1;
+    if(btnPress3 == HIGH) stopper3 == 0;
 
 }
   
