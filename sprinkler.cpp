@@ -482,7 +482,7 @@ void mode_3(){
 
 void mode_1(){
 
-    btnPress3 = digitalRead(button3);
+    auto btnPress3 = digitalRead(button3);
    
    if(btnPress3 == LOW && stopper3 == 0){
         mode_1_zone = ++mode_1_zone % 9;
@@ -499,7 +499,7 @@ void mode_1(){
     if (mode_1_zone != 0 )
         display.println("   " + String(mode_1_zone));
     else
-        display.println("    ALL");
+        display.println("  ALL");
 
     display.setTextSize(1);
     display.display();
@@ -525,30 +525,8 @@ void mode_1(){
             turn_on_zone(mode_1_zone);
 
     }
-/*
-   while (sec){
-    display.clearDisplay(); 
-    display.setTextColor(BLACK);
-    display.setCursor(0,0);
-    display.setTextSize(1);
-    display.println(" Watering Zone ");
-    display.setTextSize(2);
-    display.println("   " + String(number));
-    display.setTextSize(1);
-    display.println("Timer: " + String(sec / 60)+ ":" + String(sec % 60));
-    display.display();
-    delay(1000);
-        if(digitalRead(button1) == LOW || forced_stop){ // Forced Stop
-            forced_stop = true;  // Forced stop variable
-            display_forced_stop();
-            ///forced_stop = false; // make  skip
-            break;
-        }
-    sec--;
-    }
-*/
 
-    if(btnPress3 == HIGH) stopper3 == 0;
+    if(btnPress3 == HIGH) stopper3 = 0;
 
 }
   
