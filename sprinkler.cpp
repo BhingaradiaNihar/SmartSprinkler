@@ -64,7 +64,6 @@ int time_to_water = 4; // in 24 hours specify hour
  void reset_mode_1_zones() {mode_1_zone = 0;}
  DateTime get_DateTime(time_t mytime);
 
-
 void setup() {
     pinMode (zone1, OUTPUT);
     pinMode (zone2, OUTPUT);
@@ -180,9 +179,6 @@ bool turn_on_zone(int zone){
                 break;
         }
     }
-    
-    prev = get_DateTime(Time.now()); // sets previously water date/time
-    
     return false;
 }
 
@@ -220,6 +216,7 @@ void mobile_handle(const char* event, const char* data) {
             for (int i = 1 ; i <= 8 ; i++){
                 if(turn_on_zone(i)) break;
             }
+                prev = get_DateTime(Time.now()); // sets previously water date/time
             break;
         case 10:                           //  Forced to stop
             forced_stop = true;
@@ -242,28 +239,7 @@ void loop() {
         Mode = (Mode + 1 ) % TOTAL_MODE;
         stopper1 = 1;
     }
-    int btnPress2 = digitalRead(button2);
-    if(btnPress2 == LOW && stopper2 == 0){
-
-        if(Mode == 2){
-            for (int i = 1 ; i <= 8 ; i++){
-                if(turn_on_zone(i)) break; // turns all zone one by one
-            }
-        }
-        else if(Mode == 3){
-            increment_day_to_water(); // skip a day
-            display_skip_day();
-        }
-        else if(Mode == 4){
-             for (int i = 1 ; i <= 8 ; i++)
-                if(++zone_time[i] > 15)
-                    zone_time[i] = 1;
-        }
-        else if(Mode == 5)
-            time_to_water++;
-            
-        stopper2 = 1;
-    }
+    if (btnPress1 == HIGH) stopper1 = 0;
     
     if (Mode == 0) 
         mode_0();
@@ -279,9 +255,7 @@ void loop() {
         mode_5();
     
 
-    if (btnPress1 == HIGH) stopper1 = 0;
-    if (btnPress2 == HIGH) stopper2 = 0;
-    delay(200);
+    delay(100);
 }
 
 DateTime get_DateTime(time_t mytime){
@@ -442,6 +416,14 @@ String get_day_string(int num){
     display.display();
 }
  void mode_2(){
+    int btnPress2 = digitalRead(button2);
+    if(btnPress2 == LOW && stopper2 == 0){
+        for (int i = 1 ; i <= 8 ; i++){
+            if(turn_on_zone(i)) break; // turns all zone one by one
+        }
+            prev = get_DateTime(Time.now()); // sets previously water date/time
+        stopper2 = 1;
+    }
     if(prev.raw){
         display.clearDisplay(); 
         display.setTextColor(BLACK);
@@ -463,9 +445,16 @@ String get_day_string(int num){
         display.println("You haven't   Waterd \nPreviously");
         display.display();
     }
+
+    if (btnPress2 == HIGH) stopper2 = 0;
 }
   
 void mode_3(){
+    int btnPress2 = digitalRead(button2);
+    if(btnPress2 == LOW && stopper2 == 0){
+        increment_day_to_water(); // skip a day
+        display_skip_day();
+    }
     display.clearDisplay(); 
     display.setTextColor(BLACK);
     display.setCursor(0,0);
@@ -482,6 +471,7 @@ void mode_3(){
         display.println("at " + String(time_to_water - 12) + " pm");
     
     display.display();
+    if (btnPress2 == HIGH) stopper2 = 0;
 }  
 
 void mode_1(){
@@ -518,6 +508,7 @@ void mode_1(){
             for (int i = 1 ; i <= 8 ; i++){
                 if(turn_on_zone(i)) break; // turns all zone one by one
             }
+                prev = get_DateTime(Time.now()); // sets previously water date/time
         }
         else
             turn_on_zone(mode_1_zone);
@@ -528,7 +519,13 @@ void mode_1(){
 
 }
   
-void mode_4(){
+void mode_4(){    
+    int btnPress2 = digitalRead(button2);
+    if(btnPress2 == LOW && stopper2 == 0){
+         for (int i = 1 ; i <= 8 ; i++)
+            if(++zone_time[i] > 15)
+                zone_time[i] = 1;
+    }
     display.clearDisplay(); 
     display.setTextColor(BLACK);
     display.setCursor(0,0);
@@ -537,6 +534,7 @@ void mode_4(){
     display.println(message);
     display.println("minutes");
     display.display();
+    if (btnPress2 == HIGH) stopper2 = 0;
 }
 
 void display_forced_stop(){
@@ -550,6 +548,11 @@ void display_forced_stop(){
 }
 
 void mode_5(){
+    int btnPress2 = digitalRead(button2);
+    if(btnPress2 == LOW && stopper2 == 0){
+        time_to_water++;    
+        stopper2 = 1;
+    }
     display.clearDisplay(); 
     display.setTextColor(BLACK);
     display.setCursor(0,0);
@@ -563,6 +566,7 @@ void mode_5(){
         display.println("set to " + String(time_to_water - 12) + " pm");
     
     display.display();
+    if (btnPress2 == HIGH) stopper2 = 0;
 }
   
 int minute_to_milis(int minute){             // minute to second conversion
