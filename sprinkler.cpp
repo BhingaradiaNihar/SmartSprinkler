@@ -76,7 +76,7 @@ void setup() {
     pinMode (zone8, OUTPUT);
     pinMode(button1, INPUT_PULLUP);
     pinMode(button2, INPUT_PULLUP);
-    pinMode(button2, INPUT_PULLUP);
+    pinMode(button3, INPUT_PULLUP);
     digitalWrite(zone1, HIGH);
     digitalWrite(zone2, HIGH);
     digitalWrite(zone3, HIGH);
@@ -482,7 +482,7 @@ void mode_3(){
 
 void mode_1(){
 
-    auto btnPress3 = digitalRead(button3);
+    int btnPress3 = digitalRead(button3);
    
    if(btnPress3 == LOW && stopper3 == 0){
         mode_1_zone = ++mode_1_zone % 9;
