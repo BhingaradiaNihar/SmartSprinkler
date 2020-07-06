@@ -4,16 +4,16 @@
 // (FAST) SOFTWARE SPI
 // pin A3 - Serial clock out (SCLK) - User defined
 // pin A5 - Serial data out (DIN/MOSI) - User defined
-// pin D2 - Data/Command select (D/C) - User defined
+// pin A0 - Data/Command select (D/C) - User defined
 // pin A2 - LCD chip select (CS) - User defined
-// pin D3 - LCD reset (RST) - User defined
+// pin A1 - LCD reset (RST) - User defined
 // Adafruit_PCD8544(SCLK, DIN, DC, CS, RST)
-Adafruit_PCD8544 display = Adafruit_PCD8544(A3, A5, D2, A2, D3);
+Adafruit_PCD8544 display = Adafruit_PCD8544(A3, A5, A0, A2, A1);
 
 int zone1 = D0;
 int zone2 = D1;
-int zone3 = A0;
-int zone4 = A1;
+int zone3 = D2;
+int zone4 = D3;
 int zone5 = D4;
 int zone6 = D5;
 int zone7 = D6;
@@ -49,11 +49,11 @@ int time_to_water = 4; // in 24 hours specify hour
 
 /* function declaratin */
  void set_day_to_water();
- void turn_on_zone(int zone);
+ bool turn_on_zone(int zone);
  String get_day(int num);
  void increment_day_to_water();
  void display_skip_day();
- void display_and_water_zone(int number);
+ bool display_watering_zone(int number);
  void mode_0();
  void mode_1();
  void mode_2();
@@ -84,8 +84,7 @@ void setup() {
     digitalWrite(zone5, HIGH);
     digitalWrite(zone6, HIGH);
     digitalWrite(zone7, HIGH);
-    digitalWrite(zone8, HIGH);
-    
+    digitalWrite(zone8, HIGH);    
     // set Day-Light saving time if applicable and Sync time
     Particle.syncTime();
     if(Time.isDST()) 
@@ -103,55 +102,70 @@ void setup() {
     Particle.subscribe("Mobile", mobile_handle, ALL_DEVICES); //
 }
 
-void turn_on_zone(int zone){
+bool turn_on_zone(int zone){
     if (forced_stop == false ) {           // force stop is false
         switch(zone){
             case 1:
                 digitalWrite(zone1, LOW);
-                display_and_water_zone(1, minute_to_milis(zone_time[1]));                // FIX THIS
-                //delay(minute_to_milis(zone_time[1]));
+                if(display_watering_zone(1, minute_to_milis(zone_time[1]))){
+                    digitalWrite(zone1, HIGH);
+                    return true; 
+                }                
                 digitalWrite(zone1, HIGH);
                 break;
             case 2:
                 digitalWrite(zone2, LOW);
-                display_and_water_zone(2, minute_to_milis(zone_time[2]));
-                //delay(minute_to_milis(zone_time[2]));
+                if(display_watering_zone(2, minute_to_milis(zone_time[2]))){
+                    digitalWrite(zone2, HIGH);
+                    return true; 
+                }                
                 digitalWrite(zone2, HIGH);
                 break;
             case 3:
                 digitalWrite(zone3, LOW);
-                display_and_water_zone(3, minute_to_milis(zone_time[3]));
-                //delay(minute_to_milis(zone_time[3]));
+                if(display_watering_zone(3, minute_to_milis(zone_time[3]))){
+                    digitalWrite(zone3, HIGH);
+                    return true; 
+                }                
                 digitalWrite(zone3, HIGH);
-                break;
             case 4:
                 digitalWrite(zone4, LOW);
-                display_and_water_zone(4, minute_to_milis(zone_time[4]));
-                //delay(minute_to_milis(zone_time[4]));
+               if(display_watering_zone(4, minute_to_milis(zone_time[4]))){
+                    digitalWrite(zone4, HIGH);
+                    return true; 
+                }                
                 digitalWrite(zone4, HIGH);
                 break;
             case 5:
                 digitalWrite(zone5, LOW);
-                display_and_water_zone(5, minute_to_milis(zone_time[5]));
-                //delay(minute_to_milis(zone_time[5]));
+                if(display_watering_zone(5, minute_to_milis(zone_time[5]))){
+                    digitalWrite(zone5, HIGH);
+                    return true; 
+                }                
                 digitalWrite(zone5, HIGH);
                 break;
             case 6:
                 digitalWrite(zone6, LOW);
-                display_and_water_zone(6, minute_to_milis(zone_time[6]));
-                //delay(minute_to_milis(zone_time[6]));
+                if(display_watering_zone(6, minute_to_milis(zone_time[6]))){
+                    digitalWrite(zone6, HIGH);
+                    return true; 
+                }                
                 digitalWrite(zone6, HIGH);
                 break;
             case 7:
                 digitalWrite(zone7, LOW);
-                display_and_water_zone(7, minute_to_milis(zone_time[7]));
-                //delay(minute_to_milis(zone_time[7]));
+                if(display_watering_zone(7, minute_to_milis(zone_time[7]))){
+                    digitalWrite(zone7, HIGH);
+                    return true; 
+                }                
                 digitalWrite(zone7, HIGH);
                 break;
             case 8:
                 digitalWrite(zone8, LOW);
-                display_and_water_zone(8, minute_to_milis(zone_time[8]));
-                //delay(minute_to_milis(zone_time[8]));
+                if(display_watering_zone(8, minute_to_milis(zone_time[8]))){
+                    digitalWrite(zone8, HIGH);
+                    return true; 
+                }                
                 digitalWrite(zone8, HIGH);
                 break; 
             default:
@@ -169,6 +183,7 @@ void turn_on_zone(int zone){
     
     prev = get_DateTime(Time.now()); // sets previously water date/time
     
+    return false;
 }
 
 
@@ -203,14 +218,7 @@ void mobile_handle(const char* event, const char* data) {
             break;
         case 9:                           // turn on all sprinkler one by one
             for (int i = 1 ; i <= 8 ; i++){
-              if(digitalRead(button1) == LOW || forced_stop){ // Forced Stop
-                forced_stop = true;  // Forced stop variable
-                display_forced_stop();
-                // reset happens in loop after sending notification
-                forced_stop = false; // reset
-                break;
-                 }
-                turn_on_zone(i);
+                if(turn_on_zone(i)) break;
             }
             break;
         case 10:                           //  Forced to stop
@@ -239,13 +247,7 @@ void loop() {
 
         if(Mode == 2){
             for (int i = 1 ; i <= 8 ; i++){
-                if(digitalRead(button1) == LOW || forced_stop){ // Forced Stop
-                    forced_stop = true;  // Forced stop variable
-                    display_forced_stop();
-                    forced_stop = false; // reset
-                    break;
-                }
-                turn_on_zone(i); // turns all zone one by one
+                if(turn_on_zone(i)) break; // turns all zone one by one
             }
         }
         else if(Mode == 3){
@@ -344,8 +346,9 @@ DateTime get_DateTime(time_t mytime){
     return data;
 }       
 
- void display_and_water_zone(int number, int time){  // FIX THIS
+ bool display_watering_zone(int number, int time){  // FIX THIS
     int sec = time / 1000;
+    
     while (sec){
     display.clearDisplay(); 
     display.setTextColor(BLACK);
@@ -361,11 +364,12 @@ DateTime get_DateTime(time_t mytime){
         if(digitalRead(button1) == LOW || forced_stop){ // Forced Stop
             forced_stop = true;  // Forced stop variable
             display_forced_stop();
-            ///forced_stop = false; // make  skip
-            break;
+            forced_stop = false;
+            return true;
         }
     sec--;
     }
+    return false;
 }
   
   
@@ -512,13 +516,7 @@ void mode_1(){
 
         if(mode_1_zone == 0){
             for (int i = 1 ; i <= 8 ; i++){
-                if(forced_stop){ // Forced Stop
-                    forced_stop = true;  // Forced stop variable
-                    display_forced_stop();
-                    forced_stop = false; // reset
-                    break;
-                }
-                turn_on_zone(i); // turns all zone one by one
+                if(turn_on_zone(i)) break; // turns all zone one by one
             }
         }
         else
