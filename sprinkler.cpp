@@ -42,7 +42,8 @@ int Mode = 0;
 int stopper1 = 0; 
 int stopper2 = 0;
 int stopper3 = 0; 
-int mode_1_zone = 0;
+int mode1_zone = 0;
+int mode4_zone = 1;
 const int TOTAL_MODE = 6;
 int time_to_water = 4; // in 24 hours specify hour
 
@@ -61,7 +62,7 @@ int time_to_water = 4; // in 24 hours specify hour
  void mode_4();
  void display_forced_stop();
  int minute_to_milis(int minute);
- void reset_mode_1_zones() {mode_1_zone = 0;}
+ void reset_mode_1_zones() {mode1_zone = 0;}
  DateTime get_DateTime(time_t mytime);
 
 void setup() {
@@ -479,7 +480,7 @@ void mode_1(){
     int btnPress3 = digitalRead(button3);
    
    if(btnPress3 == LOW && stopper3 == 0){
-        mode_1_zone = ++mode_1_zone % 9;
+        mode1_zone = ++mode1_zone % 9;
         stopper3 = 1;
     }
 
@@ -490,8 +491,8 @@ void mode_1(){
     display.println("     Zone");
     display.println("");
     display.setTextSize(2);
-    if (mode_1_zone != 0 )
-        display.println("   " + String(mode_1_zone));
+    if (mode1_zone != 0 )
+        display.println("   " + String(mode1_zone));
     else
         display.println("  ALL");
 
@@ -504,14 +505,14 @@ void mode_1(){
     if(digitalRead(button2) == LOW){
 
 
-        if(mode_1_zone == 0){
+        if(mode1_zone == 0){
             for (int i = 1 ; i <= 8 ; i++){
                 if(turn_on_zone(i)) break; // turns all zone one by one
             }
                 prev = get_DateTime(Time.now()); // sets previously water date/time
         }
         else
-            turn_on_zone(mode_1_zone);
+            turn_on_zone(mode1_zone);
 
     }
 
@@ -521,6 +522,15 @@ void mode_1(){
   
 void mode_4(){    
     int btnPress2 = digitalRead(button2);
+    int btnPress3 = digitalRead(button3);
+
+
+    if(btnPress3 == LOW && stopper3 == 0){
+        mode4_zone = ++mode4_zone % 9;
+        if(mode4_zone == 0) mode4_zone = 1;
+    }
+
+
     if(btnPress2 == LOW && stopper2 == 0){
          for (int i = 1 ; i <= 8 ; i++)
             if(++zone_time[i] > 15)
@@ -530,11 +540,14 @@ void mode_4(){
     display.setTextColor(BLACK);
     display.setCursor(0,0);
     display.setTextSize(1);
-    String message = "Each zones are schedule to  water for " + String(zone_time[1]);
+    if(mode4_zone == 0)
+
+    String message = "zone " + String(mode_4_zone) + " is schedule to  water for " + String(zone_time[1]);
     display.println(message);
     display.println("minutes");
     display.display();
     if (btnPress2 == HIGH) stopper2 = 0;
+    if (btnPress3 == HIGH) stopper3 = 0;
 }
 
 void display_forced_stop(){
